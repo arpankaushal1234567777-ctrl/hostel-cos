@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "create-admin": "node scripts/createAdmin.js"
+    "create-admin": "node scripts/createAdmin.js",
+    "seed-hostels": "node scripts/seedHostels.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
