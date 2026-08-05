@@ -2,11 +2,54 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Bed, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { Bed, Eye, EyeOff, ArrowLeft, AlertCircle, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    const formData = new FormData(e.currentTarget);
+    const identifier = formData.get("identifier") as string;
+    const password = formData.get("password") as string;
+
+    if (!identifier || !password) {
+      setError("Please fill in all fields.");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/student/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ identifier, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Authentication failed");
+      } else {
+        router.push("/dashboard");
+        router.refresh();
+      }
+    } catch (err) {
+      setError("An unexpected error occurred.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <main className="flex-1 flex flex-col min-h-screen bg-muted/30">
@@ -35,8 +78,15 @@ export default function LoginPage() {
 
         {/* Login Form Card */}
         <div className="card-apple w-full p-6 sm:p-8">
-          <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-5" onSubmit={handleLogin}>
             
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 p-3 rounded-lg flex items-start gap-2 text-sm font-medium">
+                <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                <p>{error}</p>
+              </div>
+            )}
+
             {/* Email / ID */}
             <div className="space-y-1.5">
               <label htmlFor="identifier" className="text-sm font-medium text-foreground">
@@ -44,9 +94,11 @@ export default function LoginPage() {
               </label>
               <input 
                 id="identifier"
+                name="identifier"
                 type="text" 
                 placeholder="e.g. s1234567 or email@uni.edu"
                 className="w-full px-4 py-2.5 rounded-lg border border-border/60 bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-foreground/20 focus:border-foreground/40 transition-all"
+                disabled={isLoading}
               />
             </div>
 
@@ -63,15 +115,18 @@ export default function LoginPage() {
               <div className="relative">
                 <input 
                   id="password"
+                  name="password"
                   type={showPassword ? "text" : "password"} 
                   placeholder="••••••••"
                   className="w-full pl-4 pr-11 py-2.5 rounded-lg border border-border/60 bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-foreground/20 focus:border-foreground/40 transition-all"
+                  disabled={isLoading}
                 />
                 <button 
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
                   aria-label={showPassword ? "Hide password" : "Show password"}
+                  disabled={isLoading}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -84,6 +139,7 @@ export default function LoginPage() {
                 type="checkbox" 
                 id="remember" 
                 className="rounded text-foreground focus:ring-foreground/20 bg-background border-border/60 w-4 h-4"
+                disabled={isLoading}
               />
               <label htmlFor="remember" className="text-sm text-foreground/80 cursor-pointer select-none">
                 Remember me
@@ -91,8 +147,12 @@ export default function LoginPage() {
             </div>
 
             {/* Submit Button */}
-            <button type="submit" className="btn-primary w-full mt-2 py-2.5">
-              Sign In
+            <button 
+              type="submit" 
+              className="btn-primary w-full mt-2 py-2.5 flex justify-center items-center"
+              disabled={isLoading}
+            >
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign In"}
             </button>
           </form>
 
