@@ -99,7 +99,7 @@ export default function LoginPage() {
           {/* Register Link */}
           <div className="mt-6 text-center text-sm text-muted-foreground">
             New student?{" "}
-            <Link href="#" className="text-foreground font-medium hover:underline underline-offset-4">
+            <Link href="/register" className="text-foreground font-medium hover:underline underline-offset-4">
               Register here
             </Link>
           </div>
