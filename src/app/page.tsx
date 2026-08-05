@@ -78,6 +78,14 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Footer with Admin Link */}
+        <footer className="w-full flex justify-center pb-8">
+          <Link href="/admin/login" className="text-xs text-muted-foreground/60 hover:text-foreground transition-colors font-medium flex items-center gap-1.5">
+            <Settings className="w-3.5 h-3.5" />
+            Admin Portal Access
+          </Link>
+        </footer>
+
       </div>
     </main>
   );

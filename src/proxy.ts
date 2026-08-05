@@ -40,3 +40,5 @@ export const config = {
     "/api/admin/:path*"
   ],
 };
+
+export default proxy;
