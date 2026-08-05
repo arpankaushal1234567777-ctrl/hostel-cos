@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Bed, Users, LayoutDashboard, Settings } from "lucide-react";
 
