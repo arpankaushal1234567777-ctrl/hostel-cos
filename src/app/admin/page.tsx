@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LogOut, LayoutDashboard, Building2, Users } from "lucide-react";
@@ -11,6 +11,22 @@ import { HostelsTab } from "@/components/admin/HostelsTab";
 export default function AdminDashboardPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"STUDENTS" | "HOSTELS">("STUDENTS");
+  const [adminRole, setAdminRole] = useState<string>("");
+
+  useEffect(() => {
+    const fetchRole = async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const data = await res.json();
+          setAdminRole(data.user.role);
+        }
+      } catch (error) {
+        console.error("Failed to fetch admin role");
+      }
+    };
+    fetchRole();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -32,7 +48,14 @@ export default function AdminDashboardPage() {
             <div className="w-8 h-8 bg-red-500/10 rounded-lg flex items-center justify-center text-red-500">
               <LayoutDashboard className="w-4 h-4" />
             </div>
-            <span className="font-semibold text-sm tracking-tight text-foreground hidden sm:inline-block">Admin Portal</span>
+            <div className="flex flex-col">
+              <span className="font-semibold text-sm tracking-tight text-foreground hidden sm:inline-block">Admin Portal</span>
+              {adminRole && (
+                <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider hidden sm:inline-block">
+                  {adminRole === "BOYS_ADMIN" ? "Boys Hostel" : adminRole === "GIRLS_ADMIN" ? "Girls Hostel" : adminRole}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Navigation Tabs */}

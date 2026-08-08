@@ -29,7 +29,7 @@ export async function proxy(request: NextRequest) {
 
     const payload = await verifyToken(token);
 
-    if (!payload || payload.role !== "ADMIN") {
+    if (!payload || (payload.role !== "BOYS_ADMIN" && payload.role !== "GIRLS_ADMIN")) {
       // If a student tries to access admin, send them to their dashboard
       if (payload && payload.role === "STUDENT") {
         return NextResponse.redirect(new URL("/dashboard", request.url));
@@ -52,7 +52,7 @@ export async function proxy(request: NextRequest) {
 
     if (!payload || payload.role !== "STUDENT") {
       // If an admin tries to access student dashboard, send them to admin portal
-      if (payload && payload.role === "ADMIN") {
+      if (payload && (payload.role === "BOYS_ADMIN" || payload.role === "GIRLS_ADMIN")) {
         return NextResponse.redirect(new URL("/admin", request.url));
       }
       return NextResponse.redirect(new URL("/login", request.url));

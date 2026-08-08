@@ -32,8 +32,19 @@ async function createAdmin() {
     await mongoose.connect(MONGODB_URI);
     console.log("Connected to MongoDB.");
 
-    const adminEmail = process.argv[2] || "admin@uni.edu";
-    const adminPassword = process.argv[3] || "admin1234";
+    const adminType = process.argv[2];
+    const adminEmail = process.argv[3];
+    const adminPassword = process.argv[4] || "admin1234";
+
+    if (!adminType || !["BOYS_ADMIN", "GIRLS_ADMIN"].includes(adminType)) {
+      console.error("Usage: node scripts/createAdmin.js <BOYS_ADMIN|GIRLS_ADMIN> <email> [password]");
+      process.exit(1);
+    }
+
+    if (!adminEmail) {
+      console.error("Please provide an email address.");
+      process.exit(1);
+    }
 
     const existingAdmin = await User.findOne({ universityEmail: adminEmail });
     if (existingAdmin) {
@@ -45,22 +56,22 @@ async function createAdmin() {
     const passwordHash = await bcrypt.hash(adminPassword, salt);
 
     const admin = new User({
-      fullName: "Super Administrator",
-      studentId: "ADMIN_001",
+      fullName: adminType === "BOYS_ADMIN" ? "Boys Hostel Admin" : "Girls Hostel Admin",
+      studentId: adminType === "BOYS_ADMIN" ? "B_ADMIN_001" : "G_ADMIN_001",
       universityEmail: adminEmail,
       phoneNumber: "+00000000000",
-      gender: "other",
+      gender: adminType === "BOYS_ADMIN" ? "male" : "female",
       course: "N/A",
       department: "Administration",
       academicYear: "N/A",
       dateOfBirth: new Date("1980-01-01"),
       passwordHash,
-      role: "ADMIN",
+      role: adminType,
       accountStatus: "ACTIVE" // Admin is active by default
     });
 
     await admin.save();
-    console.log(`Successfully created ADMIN account: ${adminEmail}`);
+    console.log(`Successfully created ${adminType} account: ${adminEmail}`);
   } catch (error) {
     console.error("Error creating admin:", error);
   } finally {

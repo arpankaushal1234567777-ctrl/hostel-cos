@@ -14,7 +14,7 @@ export async function PATCH(
     }
 
     const payload = await verifyToken(token);
-    if (!payload || payload.role !== "ADMIN") {
+    if (!payload || (payload.role !== "BOYS_ADMIN" && payload.role !== "GIRLS_ADMIN")) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -28,15 +28,21 @@ export async function PATCH(
 
     await connectToDatabase();
 
+    const roomToUpdate = await Room.findById(id).populate("hostel").lean();
+    if (!roomToUpdate) {
+      return NextResponse.json({ error: "Room not found" }, { status: 404 });
+    }
+
+    const expectedGender = payload.role === "BOYS_ADMIN" ? "MALE" : "FEMALE";
+    if ((roomToUpdate.hostel as any).genderAllowed !== expectedGender) {
+      return NextResponse.json({ error: "Forbidden: Wrong admin role for this room" }, { status: 403 });
+    }
+
     const room = await Room.findOneAndUpdate(
       { _id: id, "beds._id": bedId },
       { $set: { "beds.$.status": status } },
       { new: true }
     ).lean();
-
-    if (!room) {
-      return NextResponse.json({ error: "Room or bed not found" }, { status: 404 });
-    }
 
     return NextResponse.json({ success: true, room }, { status: 200 });
   } catch (error: any) {

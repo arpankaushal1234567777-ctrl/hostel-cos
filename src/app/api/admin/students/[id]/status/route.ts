@@ -14,7 +14,7 @@ export async function PATCH(
     }
 
     const payload = await verifyToken(token);
-    if (!payload || payload.role !== "ADMIN") {
+    if (!payload || (payload.role !== "BOYS_ADMIN" && payload.role !== "GIRLS_ADMIN")) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -30,8 +30,10 @@ export async function PATCH(
 
     await connectToDatabase();
 
+    const genderFilter = payload.role === "BOYS_ADMIN" ? "male" : "female";
+
     const student = await User.findOneAndUpdate(
-      { _id: id, role: "STUDENT" },
+      { _id: id, role: "STUDENT", gender: genderFilter },
       { $set: { accountStatus: status } },
       { new: true }
     ).select("-passwordHash").lean();

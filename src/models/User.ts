@@ -64,7 +64,7 @@ const UserSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ["STUDENT", "ADMIN"],
+      enum: ["STUDENT", "BOYS_ADMIN", "GIRLS_ADMIN"],
       default: "STUDENT",
     },
     accountStatus: {

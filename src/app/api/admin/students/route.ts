@@ -11,13 +11,15 @@ export async function GET(req: NextRequest) {
     }
 
     const payload = await verifyToken(token);
-    if (!payload || payload.role !== "ADMIN") {
+    if (!payload || (payload.role !== "BOYS_ADMIN" && payload.role !== "GIRLS_ADMIN")) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     await connectToDatabase();
 
-    const students = await User.find({ role: "STUDENT" })
+    const genderFilter = payload.role === "BOYS_ADMIN" ? "male" : "female";
+
+    const students = await User.find({ role: "STUDENT", gender: genderFilter })
       .select("-passwordHash")
       .sort({ createdAt: -1 })
       .lean();
@@ -29,7 +31,7 @@ export async function GET(req: NextRequest) {
       rejected: students.filter((s) => s.accountStatus === "REJECTED").length,
     };
 
-    return NextResponse.json({ stats, students }, { status: 200 });
+    return NextResponse.json({ stats, students, adminRole: payload.role }, { status: 200 });
   } catch (error: any) {
     console.error("Fetch students error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

@@ -12,13 +12,15 @@ export async function GET(req: NextRequest) {
     }
 
     const payload = await verifyToken(token);
-    if (!payload || payload.role !== "ADMIN") {
+    if (!payload || (payload.role !== "BOYS_ADMIN" && payload.role !== "GIRLS_ADMIN")) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     await connectToDatabase();
 
-    const hostels = await Hostel.find().lean();
+    const genderFilter = payload.role === "BOYS_ADMIN" ? "MALE" : "FEMALE";
+
+    const hostels = await Hostel.find({ genderAllowed: genderFilter }).lean();
     const rooms = await Room.find().lean();
 
     const hostelStats = hostels.map((hostel) => {
